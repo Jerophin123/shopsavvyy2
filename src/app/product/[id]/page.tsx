@@ -11,7 +11,6 @@ import {
   Truck, 
   Shield, 
   RotateCcw, 
-  CreditCard,
   Plus,
   Minus,
   Share2,
@@ -24,7 +23,7 @@ import Link from 'next/link';
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
-  const { addItem, updateQuantity } = useCartStore();
+  const { addItem } = useCartStore();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);

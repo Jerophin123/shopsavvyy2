@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Star, Flame, Clock, Filter, SortAsc } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Star, Flame, Filter, SortAsc } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
 
 export default function HotDealsPage() {
@@ -129,7 +129,7 @@ export default function HotDealsPage() {
               transition={{ delay: 0.5 }}
               className="text-xl text-gray-300 max-w-2xl mx-auto"
             >
-              Limited quantity deals with countdown timers. Grab them before they're gone!
+              Limited quantity deals with countdown timers. Grab them before they&apos;re gone!
             </motion.p>
           </div>
 

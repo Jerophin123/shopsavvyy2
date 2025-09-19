@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Grid3X3, ShoppingBag, Star, Loader2, Eye, Heart } from 'lucide-react';
+import { ArrowRight, Grid3X3, ShoppingBag, Star, Eye, Heart } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
 
 export default function CategoriesPage() {

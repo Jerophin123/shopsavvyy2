@@ -13,7 +13,6 @@ import {
   UserPlus, 
   UserCircle,
   Edit3,
-  Save,
   X
 } from 'lucide-react';
 import Avatar from '@/components/Avatar';

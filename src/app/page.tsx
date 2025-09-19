@@ -150,17 +150,6 @@ export default function Home() {
     return { sold, total };
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
   const itemVariants = {
     hidden: { y: 30, opacity: 0, scale: 0.9 },
     visible: { 
@@ -179,14 +168,6 @@ export default function Home() {
     },
   };
 
-  const floatingVariants = {
-    hidden: { opacity: 0, scale: 0, rotate: -180 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      rotate: 0,
-    },
-  };
 
   return (
     <div className="min-h-screen mobile-container">
@@ -1071,7 +1052,7 @@ export default function Home() {
               Special <span className="gradient-text">Offers</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Don't miss out on these exclusive deals and discounts. Limited time only!
+              Don&apos;t miss out on these exclusive deals and discounts. Limited time only!
             </p>
           </div>
 
@@ -1247,7 +1228,7 @@ export default function Home() {
               🔥 <span className="gradient-text">Hot Deals</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Limited quantity deals with countdown timers. Grab them before they're gone!
+              Limited quantity deals with countdown timers. Grab them before they&apos;re gone!
             </p>
           </div>
 

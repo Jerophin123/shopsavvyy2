@@ -12,7 +12,6 @@ import {
   Home,
   Grid3X3,
   LogOut,
-  UserCircle,
   Heart,
   ShoppingBag
 } from 'lucide-react';

@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingBag, Star, Heart, Trash2, Eye } from 'lucide-react';
 import { useWishlistStore } from '@/store/wishlistStore';
-import { useCartStore } from '@/store/cartStore';
+import { useCartStore, Product } from '@/store/cartStore';
 
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist, clearWishlist, getWishlistCount } = useWishlistStore();
   const { addItem } = useCartStore();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product);
   };
 

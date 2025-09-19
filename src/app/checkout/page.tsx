@@ -43,8 +43,7 @@ export default function CheckoutPage() {
   });
   
   const router = useRouter();
-  const { items, getTotalPrice, getTotalItems, clearCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { items, getTotalPrice, clearCart } = useCartStore();
 
   const totalPrice = getTotalPrice();
   const tax = totalPrice * 0.08;
