@@ -76,7 +76,7 @@ export default function CartPage() {
                 Your <span className="gradient-text">Cart</span> is Empty
               </h1>
               <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
+                Looks like you haven&apos;t added any items to your cart yet. Start shopping to fill it up!
               </p>
             </div>
           </motion.div>

@@ -750,7 +750,7 @@ export default function Home() {
               Shop by <span className="gradient-text">Category</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Explore our wide range of categories and find exactly what you're looking for.
+              Explore our wide range of categories and find exactly what you&apos;re looking for.
             </p>
           </div>
 
@@ -868,7 +868,7 @@ export default function Home() {
               What Our <span className="gradient-text">Customers</span> Say
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Don't just take our word for it. Here's what our satisfied customers have to say.
+              Don&apos;t just take our word for it. Here&apos;s what our satisfied customers have to say.
             </p>
           </div>
 
@@ -912,7 +912,7 @@ export default function Home() {
                 </div>
                 
                 <p className="text-gray-300 leading-relaxed">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
               </motion.div>
             ))}
@@ -934,7 +934,7 @@ export default function Home() {
               Why <span className="gradient-text">Trust</span> ShopSavvy?
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              We're committed to providing you with the best shopping experience possible.
+              We&apos;re committed to providing you with the best shopping experience possible.
             </p>
           </div>
 

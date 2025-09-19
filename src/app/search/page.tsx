@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Search, ShoppingBag, Star, Loader2, Filter, X, Eye } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
 
-export default function SearchPage() {
+function SearchPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,7 +152,7 @@ export default function SearchPage() {
               <span className="gradient-text">Search</span> Products
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Find exactly what you're looking for with our powerful search and filter system.
+              Find exactly what you&apos;re looking for with our powerful search and filter system.
             </p>
           </div>
         </motion.div>
@@ -292,7 +292,7 @@ export default function SearchPage() {
             </h2>
             {searchQuery && (
               <p className="text-gray-300">
-                Results for "{searchQuery}"
+                Results for &ldquo;{searchQuery}&rdquo;
               </p>
             )}
           </div>
@@ -306,7 +306,7 @@ export default function SearchPage() {
               <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-white mb-2">No Products Found</h3>
               <p className="text-gray-300 mb-6">
-                Try adjusting your search terms or filters to find what you're looking for.
+                Try adjusting your search terms or filters to find what you&apos;re looking for.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
@@ -402,5 +402,20 @@ export default function SearchPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="glass-card ios-rounded-2xl p-8 text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-white" />
+          <p className="text-white">Loading search...</p>
+        </div>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   );
 }

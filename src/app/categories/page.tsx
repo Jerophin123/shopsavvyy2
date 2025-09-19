@@ -180,10 +180,10 @@ export default function CategoriesPage() {
                   key={category}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{
+                    delay: 0.1 * index,
                     type: "spring",
                     stiffness: 400,
                     damping: 25
@@ -333,7 +333,7 @@ export default function CategoriesPage() {
         >
           <div className="glass-card ios-rounded-2xl p-8">
             <h2 className="text-3xl font-bold text-white mb-4">
-              Can't Find What You're Looking For?
+              Can&apos;t Find What You&apos;re Looking For?
             </h2>
             <p className="text-xl text-gray-300 mb-6 max-w-2xl mx-auto">
               Use our powerful search feature to find exactly what you need.

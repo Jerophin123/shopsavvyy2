@@ -220,7 +220,7 @@ export default function PaymentSuccessPage() {
 
           {/* Next Steps */}
           <motion.div variants={itemVariants} className="glass-card ios-rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">What's Next?</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">What&apos;s Next?</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
@@ -229,7 +229,7 @@ export default function PaymentSuccessPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Email Confirmation</h3>
                 <p className="text-gray-400 text-sm">
-                  You'll receive an email confirmation with your order details and tracking information.
+                  You&apos;ll receive an email confirmation with your order details and tracking information.
                 </p>
               </div>
               

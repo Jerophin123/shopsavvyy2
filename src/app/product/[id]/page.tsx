@@ -23,7 +23,7 @@ import Link from 'next/link';
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
-  const { addItem, getItemQuantity, updateItemQuantity } = useCartStore();
+  const { addItem, updateQuantity } = useCartStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
