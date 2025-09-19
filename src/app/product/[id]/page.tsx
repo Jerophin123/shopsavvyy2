@@ -18,23 +18,32 @@ import {
   Eye
 } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import Link from 'next/link';
 
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { addItem, updateQuantity } = useCartStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [relatedLoading, setRelatedLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       fetchProduct();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product]);
 
   const fetchProduct = async () => {
     try {
@@ -45,6 +54,23 @@ export default function ProductPage() {
       console.error('Error fetching product:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRelatedProducts = async () => {
+    if (!product) return;
+    
+    try {
+      setRelatedLoading(true);
+      const response = await fetch(`https://fakestoreapi.com/products/category/${product.category}`);
+      const data = await response.json();
+      // Filter out the current product and limit to 4 related products
+      const filtered = data.filter((p: Product) => p.id !== product.id).slice(0, 4);
+      setRelatedProducts(filtered);
+    } catch (error) {
+      console.error('Error fetching related products:', error);
+    } finally {
+      setRelatedLoading(false);
     }
   };
 
@@ -59,6 +85,16 @@ export default function ProductPage() {
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
+    }
+  };
+
+  const handleWishlistToggle = () => {
+    if (product) {
+      if (isInWishlist(product.id)) {
+        removeFromWishlist(product.id);
+      } else {
+        addToWishlist(product);
+      }
     }
   };
 
@@ -217,6 +253,32 @@ export default function ProductPage() {
                 {product.title}
               </motion.h1>
               
+              {/* Category and Stock Status */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="flex items-center space-x-4 mb-4"
+              >
+                {/* Category Badge */}
+                <div className="glass-button px-4 py-2 ios-rounded-lg">
+                  <span className="text-white/90 text-sm font-medium capitalize">
+                    {product.category}
+                  </span>
+                </div>
+                
+                {/* In Stock Label */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg blur-sm group-hover:blur-md transition-all duration-300"></div>
+                  <div className="relative glass-card px-4 py-2 ios-rounded-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg shadow-green-500/10 hover:shadow-green-500/20">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm shadow-green-400/50"></div>
+                      <span className="text-green-400 text-sm font-semibold">In Stock</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -244,7 +306,7 @@ export default function ProductPage() {
                   <p className="text-3xl font-bold text-white">${product.price}</p>
                 </div>
                 <motion.button
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={handleWishlistToggle}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   transition={{
@@ -253,10 +315,10 @@ export default function ProductPage() {
                     damping: 25
                   }}
                   className={`glass-button w-12 h-12 ios-rounded-xl flex items-center justify-center ${
-                    isLiked ? 'text-red-500' : 'text-gray-400'
+                    product && isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400'
                   }`}
                 >
-                  <Heart size={24} className={isLiked ? 'fill-current' : ''} />
+                  <Heart size={24} className={product && isInWishlist(product.id) ? 'fill-current' : ''} />
                 </motion.button>
               </div>
             </motion.div>
@@ -419,6 +481,166 @@ export default function ProductPage() {
             </motion.div>
           </motion.div>
         </motion.div>
+
+        {/* Related Products Section */}
+        {product && (
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            className="mt-20"
+          >
+            <div className="text-center mb-12">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.0 }}
+                className="text-3xl sm:text-4xl font-bold text-white mb-4"
+              >
+                Related <span className="gradient-text">Products</span>
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+                className="text-xl text-gray-300 max-w-2xl mx-auto"
+              >
+                Discover more products in the {product.category} category
+              </motion.p>
+            </div>
+
+            {relatedLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 + index * 0.1 }}
+                    className="glass-card ios-rounded-2xl p-6 animate-pulse"
+                  >
+                    <div className="w-full h-48 bg-gray-700 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-700 rounded w-3/4 mb-4"></div>
+                    <div className="h-8 bg-gray-700 rounded"></div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : relatedProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((relatedProduct, index) => (
+                  <motion.div
+                    key={relatedProduct.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 + index * 0.1 }}
+                    whileHover={{ 
+                      y: -12,
+                      scale: 1.05,
+                      rotateX: 5,
+                      transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 20
+                      }
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="glass-card ios-rounded-2xl overflow-hidden group card-hover"
+                  >
+                    <div className="relative">
+                      <Link href={`/product/${relatedProduct.id}`}>
+                        <img
+                          src={relatedProduct.image}
+                          alt={relatedProduct.title}
+                          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                        />
+                      </Link>
+                      <div className="absolute top-4 right-4">
+                        <div className="glass-button ios-rounded-xl px-3 py-1 flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                          <span className="text-white text-sm font-medium">
+                            {relatedProduct.rating.rate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <Link href={`/product/${relatedProduct.id}`}>
+                        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 hover:text-blue-300 transition-colors duration-300 cursor-pointer">
+                          {relatedProduct.title}
+                        </h3>
+                      </Link>
+                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                        {relatedProduct.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-2xl font-bold text-white">
+                          ${relatedProduct.price}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          {relatedProduct.rating.count} reviews
+                        </span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => addItem(relatedProduct)}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25
+                          }}
+                          className="flex-1 glass-button py-3 ios-rounded-xl text-white font-semibold flex items-center justify-center space-x-2 press-effect"
+                        >
+                          <ShoppingBag size={16} />
+                          <span>Add to Cart</span>
+                        </motion.button>
+                        <Link href={`/product/${relatedProduct.id}`}>
+                          <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 25
+                            }}
+                            className="glass-button w-12 h-12 ios-rounded-xl flex items-center justify-center text-white press-effect"
+                          >
+                            <Eye size={16} />
+                          </motion.button>
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+                className="text-center py-16"
+              >
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-2xl font-bold text-white mb-2">No Related Products Found</h3>
+                <p className="text-gray-400 mb-6">Check back later for more products in this category.</p>
+                <Link href="/categories">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="glass-button px-6 py-3 ios-rounded-xl text-white font-semibold press-effect"
+                  >
+                    Browse All Categories
+                  </motion.button>
+                </Link>
+              </motion.div>
+            )}
+          </motion.section>
+        )}
       </div>
     </div>
   );

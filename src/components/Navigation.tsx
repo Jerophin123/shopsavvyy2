@@ -12,9 +12,12 @@ import {
   Home,
   Grid3X3,
   LogOut,
-  UserCircle
+  UserCircle,
+  Heart,
+  ShoppingBag
 } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import Avatar from '@/components/Avatar';
 
@@ -25,9 +28,11 @@ export default function Navigation() {
   const [isMounted, setIsMounted] = useState(false);
   
   const { getTotalItems } = useCartStore();
+  const { getWishlistCount } = useWishlistStore();
   const { user, isAuthenticated, logout } = useAuthStore();
   
   const totalItems = getTotalItems();
+  const wishlistCount = getWishlistCount();
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,6 +48,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/categories', label: 'Categories', icon: Grid3X3 },
+    { href: '/wishlist', label: 'Wishlist', icon: Heart, badge: wishlistCount },
     { href: '/cart', label: 'Cart', icon: ShoppingCart, badge: totalItems },
   ];
 
@@ -60,32 +66,62 @@ export default function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 mobile-safe">
         <div className="flex items-center justify-between h-[70px] md:h-16">
-          {/* Mobile Hamburger Menu - Left */}
-          <div className="md:hidden">
-            <motion.button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg"
-              whileHover={{ scale: 1.1, y: -1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 25
-              }}
-            >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </motion.button>
+          {/* Left Section - Mobile Menu + Logo */}
+          <div className="flex items-center space-x-4">
+            {/* Mobile Hamburger Menu */}
+            <div className="md:hidden">
+              <motion.button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg"
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25
+                }}
+              >
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </motion.button>
+            </div>
+
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25
+                }}
+                className="relative"
+              >
+                <ShoppingBag 
+                  size={28} 
+                  className="text-blue-400 drop-shadow-lg" 
+                />
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    opacity: [0.7, 1, 0.7]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-900"
+                />
+              </motion.div>
+              <div className="text-xl md:text-2xl font-bold gradient-text">
+                ShopSavvy
+              </div>
+            </Link>
           </div>
 
-          {/* Logo - Center on mobile, Left on desktop */}
-          <Link href="/" className="flex items-center space-x-2 md:order-first">
-            <div className="text-xl md:text-2xl font-bold gradient-text">
-              ShopSavvy
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Center Section - Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <motion.div
                 key={item.href}
@@ -123,45 +159,83 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center">
-            <motion.form 
-              onSubmit={handleSearch} 
-              className="relative"
-              whileHover={{ scale: 1.02 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 25
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="glass-input px-4 py-2 pr-10 ios-rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-              />
-              <motion.button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+          {/* Right Section - Search + User Menu + Mobile Actions */}
+          <div className="flex items-center space-x-6">
+            {/* Search Bar - Desktop */}
+            <div className="hidden md:flex items-center">
+              <motion.form 
+                onSubmit={handleSearch} 
+                className="relative"
+                whileHover={{ scale: 1.02 }}
                 transition={{
                   type: "spring",
                   stiffness: 400,
                   damping: 25
                 }}
               >
-                <Search size={20} />
-              </motion.button>
-            </motion.form>
-          </div>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="glass-input px-4 py-2 pr-10 ios-rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                />
+                <motion.button
+                  type="submit"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25
+                  }}
+                >
+                  <Search size={20} />
+                </motion.button>
+              </motion.form>
+            </div>
 
-          {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
+            {/* User Menu - Desktop */}
+            <div className="hidden md:flex items-center">
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <motion.div
+                    whileHover={{ y: -2, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 25
+                    }}
+                  >
+                    <Link
+                      href="/account"
+                      className="p-1 transition-all duration-300"
+                    >
+                      <Avatar
+                        src={user?.avatar}
+                        alt={user?.name || 'User'}
+                        size="sm"
+                      />
+                    </Link>
+                  </motion.div>
+                  <motion.button
+                    onClick={logout}
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all duration-300 glass-button px-3 py-2 ios-rounded-lg"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 25
+                    }}
+                  >
+                    <LogOut size={18} />
+                    <span className="text-sm">Logout</span>
+                  </motion.button>
+                </div>
+              ) : (
                 <motion.div
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.95 }}
@@ -173,96 +247,60 @@ export default function Navigation() {
                 >
                   <Link
                     href="/account"
-                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all duration-300 glass-button px-4 py-2 ios-rounded-lg"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all duration-300 glass-button px-3 py-2 ios-rounded-lg"
                   >
-                    <Avatar
-                      src={user?.avatar}
-                      alt={user?.name || 'User'}
-                      size="sm"
-                    />
-                    <span>{user?.name}</span>
+                    <User size={18} />
+                    <span className="text-sm">Account</span>
                   </Link>
                 </motion.div>
-                <motion.button
-                  onClick={logout}
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all duration-300 glass-button px-4 py-2 ios-rounded-lg"
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 25
-                  }}
-                >
-                  <LogOut size={20} />
-                  <span>Logout</span>
-                </motion.button>
-              </div>
-            ) : (
-              <motion.div
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.95 }}
+              )}
+            </div>
+
+            {/* Mobile Actions - Search and Cart */}
+            <div className="md:hidden flex items-center space-x-2">
+              <motion.button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg"
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.9 }}
                 transition={{
                   type: "spring",
                   stiffness: 400,
                   damping: 25
                 }}
               >
-                <Link
-                  href="/account"
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-all duration-300 glass-button px-4 py-2 ios-rounded-lg"
-                >
-                  <User size={20} />
-                  <span>Account</span>
+                <Search size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 25
+                }}
+                className="relative"
+              >
+                <Link href="/cart" className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg flex items-center justify-center">
+                  <ShoppingCart size={18} />
+                  {isMounted && totalItems > 0 && (
+                    <motion.span
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 500, 
+                        damping: 30 
+                      }}
+                      className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center bounce-animation text-[10px] font-medium"
+                    >
+                      {totalItems}
+                    </motion.span>
+                  )}
                 </Link>
-              </motion.div>
-            )}
-          </div>
-
-          {/* Mobile Search and Cart - Right */}
-          <div className="md:hidden flex items-center space-x-1">
-            <motion.button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg"
-              whileHover={{ scale: 1.1, y: -1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 25
-              }}
-            >
-              <Search size={18} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1, y: -1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 25
-              }}
-              className="relative"
-            >
-              <Link href="/cart" className="text-gray-300 hover:text-white glass-button p-2 ios-rounded-lg flex items-center justify-center">
-                <ShoppingCart size={18} />
-                {isMounted && totalItems > 0 && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 500, 
-                      damping: 30 
-                    }}
-                    className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center bounce-animation text-[10px] font-medium"
-                  >
-                    {totalItems}
-                  </motion.span>
-                )}
-              </Link>
-            </motion.button>
+              </motion.button>
+            </div>
           </div>
         </div>
 
@@ -371,7 +409,7 @@ export default function Navigation() {
                           alt={user?.name || 'User'}
                           size="sm"
                         />
-                        <span>{user?.name}</span>
+                        <span>My Account</span>
                       </Link>
                       <button
                         onClick={() => {

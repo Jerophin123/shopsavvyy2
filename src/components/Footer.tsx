@@ -14,7 +14,8 @@ import {
   Truck,
   Shield,
   Award,
-  ArrowUp
+  ArrowUp,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function Footer() {
@@ -105,7 +106,36 @@ export default function Footer() {
           {/* Brand Section */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
             <div className="mb-6">
-              <h3 className="text-3xl font-bold gradient-text mb-4">ShopSavvy</h3>
+              <div className="flex items-center space-x-3 mb-4">
+                <motion.div
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25
+                  }}
+                  className="relative"
+                >
+                  <ShoppingBag 
+                    size={32} 
+                    className="text-blue-400 drop-shadow-lg" 
+                  />
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      opacity: [0.7, 1, 0.7]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-900"
+                  />
+                </motion.div>
+                <h3 className="text-3xl font-bold gradient-text">ShopSavvy</h3>
+              </div>
               <p className="text-gray-300 leading-relaxed mb-6">
                 Experience the future of online shopping with our premium liquid glass design, 
                 smooth animations, and intuitive shopping experience. Your trusted destination 
