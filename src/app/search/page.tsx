@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Search, ShoppingBag, Star, Loader2, Filter, X, Eye } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
+import { apiService } from '@/services/apiService';
 
 function SearchPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,8 +33,7 @@ function SearchPageContent() {
   const fetchAllProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://fakestoreapi.com/products');
-      const data = await response.json();
+      const data = await apiService.getAllProducts();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -326,7 +326,7 @@ function SearchPageContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product, index) => (
                 <motion.div
-                  key={product.id}
+                  key={`${product.id}-${product.brand || 'default'}`}
                   variants={itemVariants}
                   whileHover={{ y: -10 }}
                   className="glass-card ios-rounded-2xl overflow-hidden group card-hover"

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles, ShoppingBag, Star, Users, Zap, TrendingUp, Award, Truck, Shield, Heart, Eye, Search, Clock, Percent, Flame, Gift, Tag, CreditCard, Package, Globe, Smartphone, Headphones, Camera, Gamepad2, BookOpen, Shirt, Home as HomeIcon, Car } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { apiService } from '@/services/apiService';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -33,8 +34,7 @@ export default function Home() {
 
   const fetchFeaturedProducts = async () => {
     try {
-      const response = await fetch('https://fakestoreapi.com/products?limit=8');
-      const data = await response.json();
+      const data = await apiService.getFeaturedProducts(8);
       setFeaturedProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -45,8 +45,7 @@ export default function Home() {
 
   const fetchSpecialOffers = async () => {
     try {
-      const response = await fetch('https://fakestoreapi.com/products?limit=3');
-      const data = await response.json();
+      const data = await apiService.getSpecialOffers(3);
       setSpecialOffersProducts(data);
     } catch (error) {
       console.error('Error fetching special offers:', error);
@@ -57,8 +56,7 @@ export default function Home() {
 
   const fetchHotDeals = async () => {
     try {
-      const response = await fetch('https://fakestoreapi.com/products?limit=4');
-      const data = await response.json();
+      const data = await apiService.getHotDeals(4);
       setHotDealsProducts(data);
     } catch (error) {
       console.error('Error fetching hot deals:', error);
@@ -905,7 +903,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product, index) => (
                 <motion.div
-                  key={product.id}
+                  key={`${product.id}-${product.brand || 'default'}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -931,13 +929,25 @@ export default function Home() {
                         className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
                       />
                     </Link>
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 flex flex-col space-y-2">
                       <div className="glass-button ios-rounded-xl px-3 py-1 flex items-center space-x-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
                         <span className="text-white text-sm font-medium">
                           {product.rating.rate}
                         </span>
                       </div>
+                      {product.isNew && (
+                        <div className="glass-button ios-rounded-xl px-3 py-1 bg-green-500/20 border-green-500/30">
+                          <span className="text-green-400 text-xs font-medium">NEW</span>
+                        </div>
+                      )}
+                      {product.discountedPrice && product.oldPrice && (
+                        <div className="glass-button ios-rounded-xl px-3 py-1 bg-red-500/20 border-red-500/30">
+                          <span className="text-red-400 text-xs font-medium">
+                            -{Math.round((parseFloat(product.oldPrice) - product.discountedPrice) / parseFloat(product.oldPrice) * 100)}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <motion.button 
@@ -969,12 +979,39 @@ export default function Home() {
                     </p>
                     
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-white">
-                        ${product.price}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        {product.rating.count} reviews
-                      </span>
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2">
+                          {product.discountedPrice ? (
+                            <>
+                              <span className="text-2xl font-bold text-white">
+                                ${product.discountedPrice}
+                              </span>
+                              <span className="text-lg text-gray-400 line-through">
+                                ${product.oldPrice}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-2xl font-bold text-white">
+                              ${product.price}
+                            </span>
+                          )}
+                        </div>
+                        {product.brand && (
+                          <span className="text-xs text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full w-fit mt-1">
+                            {product.brand}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-sm text-gray-400">
+                          {product.rating.count} reviews
+                        </span>
+                        {product.stock !== undefined && (
+                          <span className="text-xs text-gray-400">
+                            Stock: {product.stock}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex gap-2">
@@ -1082,7 +1119,7 @@ export default function Home() {
                 
                 return (
                   <motion.div
-                    key={product.id}
+                    key={`${product.id}-${product.brand || 'default'}`}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -1121,7 +1158,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                       
                       {/* Wishlist Button */}
-                      <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                         <motion.button 
                           onClick={() => handleWishlistToggle(product)}
                           whileHover={{ scale: 1.1 }}
@@ -1259,7 +1296,7 @@ export default function Home() {
                 
                 return (
                   <motion.div
-                    key={product.id}
+                    key={`${product.id}-${product.brand || 'default'}`}
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -1298,7 +1335,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                       
                       {/* Wishlist Button */}
-                      <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                         <motion.button 
                           onClick={() => handleWishlistToggle(product)}
                           whileHover={{ scale: 1.1 }}

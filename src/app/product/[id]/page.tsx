@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { apiService } from '@/services/apiService';
+import ProductReviews from '@/components/ProductReviews';
+import ProductComments from '@/components/ProductComments';
 import Link from 'next/link';
 
 export default function ProductPage() {
@@ -46,8 +49,7 @@ export default function ProductPage() {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`https://fakestoreapi.com/products/${params.id}`);
-      const data = await response.json();
+      const data = await apiService.getProduct(Number(params.id));
       setProduct(data);
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -61,11 +63,8 @@ export default function ProductPage() {
     
     try {
       setRelatedLoading(true);
-      const response = await fetch(`https://fakestoreapi.com/products/category/${product.category}`);
-      const data = await response.json();
-      // Filter out the current product and limit to 4 related products
-      const filtered = data.filter((p: Product) => p.id !== product.id).slice(0, 4);
-      setRelatedProducts(filtered);
+      const data = await apiService.getRelatedProducts(product.id);
+      setRelatedProducts(data);
     } catch (error) {
       console.error('Error fetching related products:', error);
     } finally {
@@ -480,6 +479,30 @@ export default function ProductPage() {
             </motion.div>
           </motion.div>
         </motion.div>
+
+        {/* Product Reviews */}
+        {product && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mt-16"
+          >
+            <ProductReviews productId={product.id} />
+          </motion.section>
+        )}
+
+        {/* Product Comments */}
+        {product && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-16"
+          >
+            <ProductComments productId={product.id} />
+          </motion.section>
+        )}
 
         {/* Related Products Section */}
         {product && (

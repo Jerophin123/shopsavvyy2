@@ -12,6 +12,18 @@ export interface Product {
     rate: number;
     count: number;
   };
+  // Additional fields from ReactBD API
+  _id?: number;
+  isNew?: boolean;
+  oldPrice?: string;
+  discountedPrice?: number;
+  stock?: number;
+  brand?: string;
+  size?: string[];
+  type?: string;
+  // ID mapping fields
+  originalId?: number;
+  source?: 'fakestore' | 'reactbd';
 }
 
 export interface CartItem extends Product {

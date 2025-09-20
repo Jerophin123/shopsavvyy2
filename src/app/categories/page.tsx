@@ -5,16 +5,24 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Grid3X3, ShoppingBag, Star, Eye, Heart } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import { apiService } from '@/services/apiService';
+
+interface CategoryInfo {
+  name: string;
+  count: number;
+  displayName: string;
+}
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(false);
-  const [isLiked, setIsLiked] = useState<{ [key: number]: boolean }>({});
   
   const { addItem } = useCartStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
 
   useEffect(() => {
     fetchCategories();
@@ -31,8 +39,7 @@ export default function CategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://fakestoreapi.com/products/categories');
-      const data = await response.json();
+      const data = await apiService.getWorkingCategories();
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -42,8 +49,7 @@ export default function CategoriesPage() {
   const fetchProducts = async () => {
     setProductsLoading(true);
     try {
-      const response = await fetch('https://fakestoreapi.com/products');
-      const data = await response.json();
+      const data = await apiService.getAllProducts();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -56,8 +62,7 @@ export default function CategoriesPage() {
   const fetchProductsByCategory = async (category: string) => {
     setProductsLoading(true);
     try {
-      const response = await fetch(`https://fakestoreapi.com/products/category/${category}`);
-      const data = await response.json();
+      const data = await apiService.getProductsByCategory(category);
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products by category:', error);
@@ -66,19 +71,16 @@ export default function CategoriesPage() {
     }
   };
 
-  const formatCategoryName = (category: string) => {
-    return category
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+
+
+  const handleWishlistToggle = (product: Product) => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
-  const handleLike = (productId: number) => {
-    setIsLiked(prev => ({
-      ...prev,
-      [productId]: !prev[productId]
-    }));
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -148,6 +150,7 @@ export default function CategoriesPage() {
           </div>
         </motion.div>
 
+
         {/* Category Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -177,7 +180,7 @@ export default function CategoriesPage() {
               
               {categories.map((category, index) => (
                 <motion.button
-                  key={category}
+                  key={category.name}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   whileHover={{ scale: 1.05, y: -2 }}
@@ -188,18 +191,38 @@ export default function CategoriesPage() {
                     stiffness: 400,
                     damping: 25
                   }}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category.name)}
                   className={`px-6 py-3 ios-rounded-xl font-medium transition-all duration-300 press-effect ${
-                    selectedCategory === category
+                    selectedCategory === category.name
                       ? 'glass-button text-white'
                       : 'glass-button text-gray-300 hover:text-white'
                   }`}
                 >
-                  {formatCategoryName(category)}
+                  <div className="flex items-center space-x-2">
+                    <span>{category.displayName}</span>
+                    <span className="text-xs bg-gray-600/50 px-2 py-1 rounded-full">
+                      {category.count}
+                    </span>
+                  </div>
                 </motion.button>
               ))}
             </div>
           </div>
+        </motion.div>
+
+        {/* Results Count */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6"
+        >
+          <p className="text-gray-300">
+            {selectedCategory === 'all' 
+              ? `Showing all ${products.length} products`
+              : `Showing ${products.length} products in ${categories.find(c => c.name === selectedCategory)?.displayName || selectedCategory}`
+            }
+          </p>
         </motion.div>
 
         {/* Products Grid */}
@@ -225,7 +248,7 @@ export default function CategoriesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product, index) => (
                 <motion.div
-                  key={product.id}
+                  key={`${product.id}-${product.brand || 'default'}-${index}`}
                   variants={itemVariants}
                   whileHover={{ y: -10 }}
                   className="glass-card ios-rounded-2xl overflow-hidden group card-hover"
@@ -239,8 +262,18 @@ export default function CategoriesPage() {
                       />
                     </Link>
                     
-                    <div className="absolute top-4 right-4">
-                      <div className="glass rounded-full px-3 py-1 flex items-center space-x-1">
+                    {/* Brand Badge */}
+                    {product.brand && (
+                      <div className="absolute top-4 left-4">
+                        <div className="glass-button ios-rounded-xl px-3 py-1 bg-purple-500/20 border-purple-500/30 text-purple-400">
+                          <span className="text-xs font-medium">{product.brand}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Rating */}
+                    <div className="absolute bottom-4 right-4">
+                      <div className="glass-button ios-rounded-xl px-3 py-1 flex items-center space-x-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
                         <span className="text-white text-sm font-medium">
                           {product.rating.rate}
@@ -248,9 +281,10 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                     
-                    <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Wishlist Button */}
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <motion.button
-                        onClick={() => handleLike(product.id)}
+                        onClick={() => handleWishlistToggle(product)}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         transition={{
@@ -259,10 +293,10 @@ export default function CategoriesPage() {
                           damping: 25
                         }}
                         className={`glass-button w-8 h-8 ios-rounded-xl flex items-center justify-center ${
-                          isLiked[product.id] ? 'text-red-500' : 'text-gray-400'
+                          isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400'
                         }`}
                       >
-                        <Heart size={16} className={isLiked[product.id] ? 'fill-current' : ''} />
+                        <Heart size={16} className={isInWishlist(product.id) ? 'fill-current' : ''} />
                       </motion.button>
                     </div>
                   </div>
@@ -278,12 +312,39 @@ export default function CategoriesPage() {
                     </p>
                     
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-white">
-                        ${product.price}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        {product.rating.count} reviews
-                      </span>
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2">
+                          {product.discountedPrice ? (
+                            <>
+                              <span className="text-2xl font-bold text-white">
+                                ${product.discountedPrice}
+                              </span>
+                              <span className="text-lg text-gray-400 line-through">
+                                ${product.oldPrice}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-2xl font-bold text-white">
+                              ${product.price}
+                            </span>
+                          )}
+                        </div>
+                        {product.brand && (
+                          <span className="text-xs text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full w-fit mt-1">
+                            {product.brand}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-sm text-gray-400">
+                          {product.rating.count} reviews
+                        </span>
+                        {product.stock !== undefined && (
+                          <span className="text-xs text-gray-400">
+                            Stock: {product.stock}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex gap-2">

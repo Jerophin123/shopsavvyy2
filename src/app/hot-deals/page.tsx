@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Star, Flame, Filter, SortAsc } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Star, Flame, Filter, SortAsc, Heart } from 'lucide-react';
 import { useCartStore, Product } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import { apiService } from '@/services/apiService';
 
 export default function HotDealsPage() {
   const [hotDealsProducts, setHotDealsProducts] = useState<Product[]>([]);
@@ -12,6 +14,7 @@ export default function HotDealsPage() {
   const [sortBy, setSortBy] = useState('default');
   const [filterBy, setFilterBy] = useState('all');
   const { addItem } = useCartStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
 
   useEffect(() => {
     fetchHotDeals();
@@ -19,13 +22,20 @@ export default function HotDealsPage() {
 
   const fetchHotDeals = async () => {
     try {
-      const response = await fetch('https://fakestoreapi.com/products');
-      const data = await response.json();
+      const data = await apiService.getHotDeals(50); // Get more hot deals for the page
       setHotDealsProducts(data);
     } catch (error) {
       console.error('Error fetching hot deals:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWishlistToggle = (product: Product) => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
     }
   };
 
@@ -72,7 +82,30 @@ export default function HotDealsPage() {
       }
     });
 
-  const categories = ['all', 'electronics', 'jewelery', "men's clothing", "women's clothing"];
+  const categories = [
+    'all', 
+    'electronics', 
+    'jewelery', 
+    "men's clothing", 
+    "women's clothing",
+    'fashion',
+    'home & garden',
+    'sports & outdoors',
+    'beauty & personal care',
+    'cameras',
+    'smartphones',
+    'audio',
+    'accessories',
+    'furniture',
+    'outdoor decor',
+    'campaign gear',
+    'athletic wear',
+    'skincare',
+    'makeup',
+    'action cameras',
+    'wireless earbuds',
+    'sunglasses'
+  ];
 
   return (
     <div className="min-h-screen mobile-container">
@@ -227,14 +260,17 @@ export default function HotDealsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSortedProducts.map((product, index) => {
-                const originalPrice = product.price * 1.3; // Simulate original price
-                const discount = calculateDiscount(originalPrice, product.price);
+                // Use actual discount price if available, otherwise simulate
+                const hasActualDiscount = product.discountedPrice && product.discountedPrice < product.price;
+                const originalPrice = hasActualDiscount ? product.price : product.price * 1.3;
+                const salePrice = hasActualDiscount ? (product.discountedPrice || product.price) : product.price;
+                const discount = calculateDiscount(originalPrice, salePrice);
                 const timeLeft = generateTimeLeft();
                 const stockInfo = generateStockInfo();
                 
                 return (
                   <motion.div
-                    key={product.id}
+                    key={`${product.id}-${product.brand || 'default'}`}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -251,8 +287,17 @@ export default function HotDealsPage() {
                     whileTap={{ scale: 0.95 }}
                     className="glass-card ios-rounded-2xl overflow-hidden group card-hover relative"
                   >
+                    {/* Brand Badge */}
+                    {product.brand && (
+                      <div className="absolute top-4 left-4 z-10">
+                        <div className="glass-button ios-rounded-xl px-3 py-1 bg-purple-500/20 border-purple-500/30 text-purple-400">
+                          <span className="text-xs font-medium">{product.brand}</span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Hot Deal Badge */}
-                    <div className="absolute top-4 left-4 z-10">
+                    <div className={`absolute ${product.brand ? 'top-12 left-4' : 'top-4 left-4'} z-10`}>
                       <div className="glass-button ios-rounded-xl px-3 py-1 flex items-center space-x-1 bg-orange-500/20 border border-orange-500/30">
                         <Flame size={14} className="text-orange-400" />
                         <span className="text-orange-400 text-sm font-bold">
@@ -262,12 +307,31 @@ export default function HotDealsPage() {
                     </div>
 
                     {/* Stock Progress */}
-                    <div className="absolute top-4 right-4 z-10">
+                    <div className="absolute top-4 right-16 z-10">
                       <div className="glass-button ios-rounded-xl px-3 py-1">
                         <span className="text-white/90 text-xs font-medium">
                           {stockInfo.sold}/{stockInfo.total} sold
                         </span>
                       </div>
+                    </div>
+
+                    {/* Wishlist Button */}
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                      <motion.button
+                        onClick={() => handleWishlistToggle(product)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25
+                        }}
+                        className={`glass-button w-8 h-8 ios-rounded-xl flex items-center justify-center press-effect ${
+                          isInWishlist(product.id) ? 'text-red-500' : 'text-white hover:bg-white/20'
+                        }`}
+                      >
+                        <Heart size={16} className={isInWishlist(product.id) ? 'fill-current' : ''} />
+                      </motion.button>
                     </div>
 
                     <div className="relative">
@@ -303,7 +367,7 @@ export default function HotDealsPage() {
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <div className="text-xl font-bold text-green-400">
-                            ${product.price}
+                            ${salePrice.toFixed(2)}
                           </div>
                           <div className="text-sm text-gray-400 line-through">
                             ${originalPrice.toFixed(2)}
